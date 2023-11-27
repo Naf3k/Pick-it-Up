@@ -16,19 +16,19 @@ screen = pygame.display.set_mode((width, height), DOUBLEBUF | OPENGL)
 pygame.display.set_caption("Pick it Up!")
 
 #sound
-bgsound = pygame.mixer.Sound("C:/Aqil/Kuliah/Sem 3/Grafkom/Project_Grafkom/sound/Soundtrack PickItUp.mp3")
-ball_s = pygame.mixer.Sound("C:/Aqil/Kuliah/Sem 3/Grafkom/Project_Grafkom/sound/ball.mp3")
+bgsound = pygame.mixer.Sound("C:/Aqil/Kuliah/Sem 3/Grafkom/Project_PickitUp/sound/Soundtrack PickItUp.mp3")
+ball_s = pygame.mixer.Sound("C:/Aqil/Kuliah/Sem 3/Grafkom/Project_PickitUp/sound/ball.mp3")
 
 # images
-mainmenu_pict = pygame.image.load("C:/Aqil/Kuliah/Sem 3/Grafkom/Project_Grafkom/img/PickItUpBG.png")
-bg = pygame.image.load("C:/Aqil/Kuliah/Sem 3/Grafkom/Project_Grafkom/img/BGPlay.png")
-ground = pygame.image.load("C:/Aqil/Kuliah/Sem 3/Grafkom/Project_Grafkom/img/Ground.png")
-basket = pygame.image.load("C:/Aqil/Kuliah/Sem 3/Grafkom/Project_Grafkom/img/Basket.png")
-bola = pygame.image.load("C:/Aqil/Kuliah/Sem 3/Grafkom/Project_Grafkom/img/ballOri.png")
-voli = pygame.image.load("C:/Aqil/Kuliah/Sem 3/Grafkom/Project_Grafkom/img/VolleyBall.png")
-bomb = pygame.image.load("C:/Aqil/Kuliah/Sem 3/Grafkom/Project_Grafkom/img/bomb.png")
-pause = pygame.image.load("C:/Aqil/Kuliah/Sem 3/Grafkom/Project_Grafkom/img/pause.png")
-RingBasket = pygame.image.load("C:/Aqil/Kuliah/Sem 3/Grafkom/Project_Grafkom/img/Ring.png")
+mainmenu_pict = pygame.image.load("C:/Aqil/Kuliah/Sem 3/Grafkom/Project_PickitUp/img/PickItUpBG.png")
+bg = pygame.image.load("C:/Aqil/Kuliah/Sem 3/Grafkom/Project_PickitUp/img/BGPlay.png")
+ground = pygame.image.load("C:/Aqil/Kuliah/Sem 3/Grafkom/Project_PickitUp/img/Ground.png")
+basket = pygame.image.load("C:/Aqil/Kuliah/Sem 3/Grafkom/Project_PickitUp/img/Basket.png")
+bola = pygame.image.load("C:/Aqil/Kuliah/Sem 3/Grafkom/Project_PickitUp/img/ballOri.png")
+voli = pygame.image.load("C:/Aqil/Kuliah/Sem 3/Grafkom/Project_PickitUp/img/VolleyBall.png")
+bomb = pygame.image.load("C:/Aqil/Kuliah/Sem 3/Grafkom/Project_PickitUp/img/bomb.png")
+pause = pygame.image.load("C:/Aqil/Kuliah/Sem 3/Grafkom/Project_PickitUp/img/pause.png")
+RingBasket = pygame.image.load("C:/Aqil/Kuliah/Sem 3/Grafkom/Project_PickitUp/img/Ring.png")
 
 # Inisialisasi OpenGL
 # glOrtho(0, width, height, 0, -1, 1)         
@@ -44,10 +44,10 @@ ring_speed = 10
 
 # ball
 ball_types = [
-    {'image': basket, 'size': 30, 'speed': 5, 'is_bomb': False},
-    {'image': voli, 'size': 30, 'speed': 5, 'is_bomb': False},
-    {'image': bola, 'size': 30, 'speed': 5, 'is_bomb': False},
-    {'image': bomb, 'size': 30, 'speed': 5, 'is_bomb': True}
+    {'image': basket, 'size': 30, 'speed': 2, 'is_bomb': False},
+    {'image': voli, 'size': 30, 'speed': 2, 'is_bomb': False},
+    {'image': bola, 'size': 30, 'speed': 2, 'is_bomb': False},
+    {'image': bomb, 'size': 30, 'speed': 2, 'is_bomb': True}
 ]
 num_ball = 5
 num_bombs = 2
@@ -151,10 +151,10 @@ def draw_ground():
     glVertex2f(0, 120)
 
     glTexCoord(1, 0)  # Sudut kanan atas
-    glVertex2f(600, 120)
+    glVertex2f(width, 120)
 
     glTexCoord(0, 0)  # Sudut kanan bawah
-    glVertex2f(600, 0)
+    glVertex2f(width, 0)
     glEnd()
 
 
@@ -198,8 +198,8 @@ def resetgame():
       { 
           'type': random.choice(ball_types),
           'x': random.randint(0, width - 30),
-          'y': random.randint(400, 450),  # Koordinat awal di luar layar
-          'reset_ball': {'x': random.randint(0, width - 30), 'y': random.randint(400, 450)}
+          'y': random.randint(-50, 0),  # Koordinat awal di luar layar
+          'reset_ball': {'x': random.randint(0, width - 30), 'y': random.randint(-50, 0)}
       } for _ in range(num_ball - num_bombs)
     ]
 
@@ -276,7 +276,6 @@ while run:
 
         screen.blit(bg,(0,0))
         screen.blit(ground,(0, 600))
-        screen.blit(ground,(0, 600))
 
         pygame.time.wait(10)
 
@@ -293,25 +292,43 @@ while run:
         for ball in ball_list:
           ball['y'] += ball['type']['speed']
           size = ball['type']['size']
-          if not ball['type']['is_bomb']:
-              lives -= 1
+          if ball['y'] > height:
+            if not ball['type']['is_bomb'] :
+                ball['x'], ball['y'] = ball['reset_ball']['x'], ball['reset_ball']['y']
+                ball['type'] = random.choice(ball_types)
+                lives -= 1
+                if lives == 0:
+                    print(f"Game Over. Skor Anda: {score}")
+                    start = False
+                    show_menu = True
+                    resetgame()
           elif (
-                ball['x'] < ring_x + ring_size and
-                ball['x'] + size > ring_x and
-                ball['y'] > ring_y + ring_size
+                ring_x < ball['x'] + size
+                and ring_x + ring_size > ball['x']
+                and ring_y < ball['y'] + size
+                and ring_y + ring_size > ball['y']
                 ):
-              
-              # Burung memakan makanan
               if ball['type']['is_bomb']:
-                  lives -+ 1
+                  if ball['type']['speed'] -2 <= 4:
+                      ball['type']['speed'] = 2
+                  else:
+                      ball['type']['speed'] -= 2
                   ball['x'], ball['y'] = ball['reset_ball']['x'], ball['reset_ball']['y']
+                  ball['type'] = random.choice(ball_types)
+                  lives -= 1
+                  if lives == 0:
+                    print(f"Game Over. Skor Anda: {score}")
+                    start = False
+                    show_menu = True
+                    resetgame()
               else:
                   score += 1
                   if score % 10 == 0:
                       for ball in ball_list:
                           ball['type']['speed'] += 2
                   ball['x'], ball['y'] = ball['reset_ball']['x'], ball['reset_ball']['y']
-
+                  ball['type'] = random.choice(ball_types)
+              
             
     glClear(GL_COLOR_BUFFER_BIT)
 
